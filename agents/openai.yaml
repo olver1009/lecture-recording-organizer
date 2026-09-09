@@ -1,0 +1,7 @@
+interface:
+  display_name: "강의 녹음 정리"
+  short_description: "음성 메모 이름 변경 후 메모에 첨부"
+  default_prompt: "Use $lecture-recording-organizer to rename lecture recordings and attach them to matching Apple Notes with transcription checks."
+
+policy:
+  allow_implicit_invocation: true
