@@ -228,12 +228,12 @@ def load_visible(raw: str) -> tuple[int, list[dict]]:
 
 def base_title(row: dict) -> str:
     started = row["started"]
-    return f"{started.month}/{started.day} {row['course']}"
+    return f"{started.month}월 {started.day}일 {row['course']}"
 
 
 def valid_existing_title(current: str, base: str) -> bool:
     current_norm, base_norm = normalized_title(current), normalized_title(base)
-    return current_norm == base_norm or bool(re.fullmatch(re.escape(base_norm) + r" \d+/\d+", current_norm))
+    return current_norm == base_norm or bool(re.fullmatch(re.escape(base_norm) + r" \d+-\d+", current_norm))
 
 
 def assign_titles(group: list[dict]) -> None:
@@ -243,7 +243,7 @@ def assign_titles(group: list[dict]) -> None:
         base = base_title(row)
         if valid_existing_title(row["current_title"], base):
             row["desired_title"] = normalized_title(row["current_title"])
-            match = re.search(r" (\d+)/(\d+)$", row["desired_title"])
+            match = re.search(r" (\d+)-(\d+)$", row["desired_title"])
             if match:
                 used.add(int(match.group(1)))
             elif count > 1:
@@ -261,7 +261,7 @@ def assign_titles(group: list[dict]) -> None:
         if position in used:
             position = next(number for number in range(1, count + 1) if number not in used)
         used.add(position)
-        row["desired_title"] = f"{base} {position}/{count}"
+        row["desired_title"] = f"{base} {position}-{count}"
 
 
 def serialize_row(row: dict) -> dict:
