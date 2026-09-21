@@ -231,9 +231,15 @@ def base_title(row: dict) -> str:
     return f"{started.month}월 {started.day}일 {row['course']}"
 
 
-def valid_existing_title(current: str, base: str) -> bool:
+def existing_title_slot(current: str, base: str, count: int) -> int | None:
     current_norm, base_norm = normalized_title(current), normalized_title(base)
-    return current_norm == base_norm or bool(re.fullmatch(re.escape(base_norm) + r" \d+-\d+", current_norm))
+    if current_norm == base_norm:
+        return 1
+    match = re.fullmatch(re.escape(base_norm) + r" (\d+)-(\d+)", current_norm)
+    if not match:
+        return None
+    position, total = map(int, match.groups())
+    return position if total == count and 1 <= position <= count else None
 
 
 def assign_titles(group: list[dict]) -> None:
@@ -241,13 +247,10 @@ def assign_titles(group: list[dict]) -> None:
     used: set[int] = set()
     for row in group:
         base = base_title(row)
-        if valid_existing_title(row["current_title"], base):
+        slot = existing_title_slot(row["current_title"], base, count)
+        if slot is not None and slot not in used:
             row["desired_title"] = normalized_title(row["current_title"])
-            match = re.search(r" (\d+)-(\d+)$", row["desired_title"])
-            if match:
-                used.add(int(match.group(1)))
-            elif count > 1:
-                used.add(1)
+            used.add(slot)
         else:
             row["desired_title"] = None
     for chronological_index, row in enumerate(group, 1):
